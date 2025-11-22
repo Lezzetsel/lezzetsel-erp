@@ -225,13 +225,6 @@ function LoginScreen({ onLogin }) {
           </button>
         </div>
 
-        <div className="mt-6 text-xs text-gray-500 space-y-1">
-          <p className="font-semibold">Demo Kullanıcılar:</p>
-          <p>• Yönetici: yonetici / 123456</p>
-          <p>• Proje: proje / 123456</p>
-          <p>• Satın Alma: satin_alma / 123456</p>
-          <p>• Cost: cost / 123456</p>
-        </div>
       </div>
     </div>
   );
@@ -5665,6 +5658,7 @@ function Depo({ stok, setStok }) {
 }
 
 export default function App() {
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('anasayfa');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stok, setStok] = useState(DEMO_STOK);
@@ -5675,11 +5669,25 @@ export default function App() {
   const [musteriler, setMusteriler] = useState(DEMO_MUSTERILER);
   const [tedarikciler, setTedarikciler] = useState(DEMO_TEDARIKCILER);
 
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setActiveTab('anasayfa');
+  };
+
+  // Giriş yapılmamışsa login ekranı göster
+  if (!user) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} user={user} onLogout={handleLogout} />
       <div className="flex">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} userRole={user.role} />
         <main className="flex-1">
           {activeTab === 'anasayfa' && <Anasayfa stok={stok} menu={menu} musteriSiparisleri={musteriSiparisleri} receteler={receteler} />}
           {activeTab === 'depo' && <Depo stok={stok} setStok={setStok} />}
@@ -5688,7 +5696,7 @@ export default function App() {
           {activeTab === 'receteler' && <Receteler receteler={receteler} setReceteler={setReceteler} stok={stok} />}
           {activeTab === 'aylik-menu' && <AylikMenu menu={menu} setMenu={setMenu} receteler={receteler} />}
           {activeTab === 'musteriler' && <Musteriler musteriler={musteriler} setMusteriler={setMusteriler} />}
-          {activeTab === 'tedarikciler' && <Tedarikciler tedarikciler={tedarikciler} setTedarikciler={setTedarikciler} />}
+          {activeTab === 'tedarikciler' && <Tedarikciler tedarikciler={tedarikciler} setTedarikciler={setTedarikciler} userRole={user.role} />}
           {activeTab === 'uretim' && <UretimPlani musteriSiparisleri={musteriSiparisleri} setMusteriSiparisleri={setMusteriSiparisleri} menu={menu} receteler={receteler} musteriler={musteriler} />}
           {activeTab === 'siparisler' && <Siparisler siparisler={siparisler} setSiparisler={setSiparisler} tedarikciler={tedarikciler} stok={stok} receteler={receteler} menu={menu} musteriSiparisleri={musteriSiparisleri} />}
         </main>
