@@ -1,4 +1,4 @@
-# 📚 Lezzetsel ERP - Kurulum Kılavuzu
+    # 📚 Lezzetsel ERP - Kurulum Kılavuzu
 
 ## 🎯 Hızlı Başlangıç
 
@@ -180,7 +180,13 @@ lezzetsel-erp/
 
 1. **İlk Giriş**: `yonetici` / `123456` ile giriş yapın ve sistemi keşfedin
 
-2. **Veri Saklama**: Tüm veriler tarayıcınızın localStorage'ında saklanır. Tarayıcı önbelleğini temizlerseniz veriler kaybolur.
+2. **Veri Saklama**: 
+   - Tüm veriler **otomatik olarak** tarayıcınızın localStorage'ında saklanır
+   - Eklediğiniz/düzenlediğiniz veriler **anında kaydedilir**
+   - Sayfa yenilediğinizde verileriniz **kaybolmaz**
+   - Giriş bilginiz saklanır, **tekrar giriş yapmanız gerekmez**
+   - ⚠️ Sadece tarayıcı önbelleğini temizlerseniz veriler kaybolur
+   - 💡 Önemli verilerinizi Excel'e aktararak yedekleyin
 
 3. **Çıkış**: Sağ üstteki kırmızı "Çıkış Yap" butonuna tıklayın
 
@@ -208,3 +214,5 @@ Sorun yaşarsanız:
 ## 🎉 Başarılar!
 
 Artık Lezzetsel ERP sisteminiz hazır! İyi çalışmalar dileriz! 🍽️✨
+
+    

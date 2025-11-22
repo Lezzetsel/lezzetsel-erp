@@ -1,4 +1,4 @@
-# 🍽️ Lezzetsel ERP - Yemek Şirketi Yönetim Sistemi
+    # 🍽️ Lezzetsel ERP - Yemek Şirketi Yönetim Sistemi
 
 Modern ve kullanıcı dostu ERP sistemi. React + Vite + Tailwind CSS ile geliştirilmiştir.
 
@@ -123,7 +123,11 @@ lezzetsel-erp/
 
 ## 📝 Notlar
 
-- Veriler tarayıcının localStorage'ında saklanır
+- **Veri Saklama**: Tüm veriler tarayıcının localStorage'ında otomatik olarak saklanır
+  - Kullanıcı girişi kalıcıdır (sayfa yenilendiğinde çıkış yapmaz)
+  - Eklenen/düzenlenen veriler otomatik kaydedilir
+  - Tarayıcı önbelleği temizlenirse veriler kaybolur
+- **Veri Yedekleme**: Önemli verileri düzenli olarak Excel'e aktarın
 - Production ortamında gerçek bir backend API entegrasyonu yapılmalıdır
 - Şifreler şu an demo amaçlıdır, production'da hash'lenmelidir
 
@@ -150,3 +154,5 @@ Bu proje özel kullanım içindir.
 **Geliştirici**: Lezzetsel Yemek ERP Ekibi
 **Versiyon**: 1.0.0
 **Tarih**: 2024
+
+    

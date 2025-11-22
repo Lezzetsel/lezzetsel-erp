@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Package, ShoppingCart, TrendingUp, DollarSign, Plus, Search, Download, Edit2, Trash2, AlertCircle, Home, Truck, Calendar, BookOpen, Users, Building2, FileText, Menu, X, AlertTriangle, ClipboardCheck } from 'lucide-react';
 
 
@@ -5658,25 +5658,92 @@ function Depo({ stok, setStok }) {
 }
 
 export default function App() {
-  const [user, setUser] = useState(null);
+  // LocalStorage'dan kullanıcı bilgisini yükle
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('lezzetsel_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
   const [activeTab, setActiveTab] = useState('anasayfa');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [stok, setStok] = useState(DEMO_STOK);
-  const [musteriSiparisleri, setMusteriSiparisleri] = useState(DEMO_MUSTERI_SIPARISLERI);
-  const [siparisler, setSiparisler] = useState(DEMO_SIPARISLER);
-  const [menu, setMenu] = useState(DEMO_AYLIK_MENU);
-  const [receteler, setReceteler] = useState(DEMO_RECETELER);
-  const [musteriler, setMusteriler] = useState(DEMO_MUSTERILER);
-  const [tedarikciler, setTedarikciler] = useState(DEMO_TEDARIKCILER);
+  
+  // LocalStorage'dan verileri yükle
+  const [stok, setStok] = useState(() => {
+    const saved = localStorage.getItem('lezzetsel_stok');
+    return saved ? JSON.parse(saved) : DEMO_STOK;
+  });
+  
+  const [musteriSiparisleri, setMusteriSiparisleri] = useState(() => {
+    const saved = localStorage.getItem('lezzetsel_musteriSiparisleri');
+    return saved ? JSON.parse(saved) : DEMO_MUSTERI_SIPARISLERI;
+  });
+  
+  const [siparisler, setSiparisler] = useState(() => {
+    const saved = localStorage.getItem('lezzetsel_siparisler');
+    return saved ? JSON.parse(saved) : DEMO_SIPARISLER;
+  });
+  
+  const [menu, setMenu] = useState(() => {
+    const saved = localStorage.getItem('lezzetsel_menu');
+    return saved ? JSON.parse(saved) : DEMO_AYLIK_MENU;
+  });
+  
+  const [receteler, setReceteler] = useState(() => {
+    const saved = localStorage.getItem('lezzetsel_receteler');
+    return saved ? JSON.parse(saved) : DEMO_RECETELER;
+  });
+  
+  const [musteriler, setMusteriler] = useState(() => {
+    const saved = localStorage.getItem('lezzetsel_musteriler');
+    return saved ? JSON.parse(saved) : DEMO_MUSTERILER;
+  });
+  
+  const [tedarikciler, setTedarikciler] = useState(() => {
+    const saved = localStorage.getItem('lezzetsel_tedarikciler');
+    return saved ? JSON.parse(saved) : DEMO_TEDARIKCILER;
+  });
 
+  // Kullanıcı girişinde localStorage'a kaydet
   const handleLogin = (userData) => {
     setUser(userData);
+    localStorage.setItem('lezzetsel_user', JSON.stringify(userData));
   };
 
+  // Çıkış yaparken localStorage'dan temizle
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('lezzetsel_user');
     setActiveTab('anasayfa');
   };
+
+  // Verileri localStorage'a kaydet
+  useEffect(() => {
+    localStorage.setItem('lezzetsel_stok', JSON.stringify(stok));
+  }, [stok]);
+
+  useEffect(() => {
+    localStorage.setItem('lezzetsel_musteriSiparisleri', JSON.stringify(musteriSiparisleri));
+  }, [musteriSiparisleri]);
+
+  useEffect(() => {
+    localStorage.setItem('lezzetsel_siparisler', JSON.stringify(siparisler));
+  }, [siparisler]);
+
+  useEffect(() => {
+    localStorage.setItem('lezzetsel_menu', JSON.stringify(menu));
+  }, [menu]);
+
+  useEffect(() => {
+    localStorage.setItem('lezzetsel_receteler', JSON.stringify(receteler));
+  }, [receteler]);
+
+  useEffect(() => {
+    localStorage.setItem('lezzetsel_musteriler', JSON.stringify(musteriler));
+  }, [musteriler]);
+
+  useEffect(() => {
+    localStorage.setItem('lezzetsel_tedarikciler', JSON.stringify(tedarikciler));
+  }, [tedarikciler]);
 
   // Giriş yapılmamışsa login ekranı göster
   if (!user) {
