@@ -4,7 +4,17 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
+// Bağlantıyı test et
+supabase
+  .from('stok')
+  .select('count')
+  .then(({ error }) => {
+    if (error) {
+      console.error('❌ Supabase bağlantı hatası:', error.message)
+    } else {
+      console.log('✅ Supabase bağlantısı başarılı!')
+    }
+  })
 // Yardımcı fonksiyonlar
 export const dbOperations = {
   // STOK İŞLEMLERİ
