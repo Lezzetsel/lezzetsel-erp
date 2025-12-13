@@ -902,7 +902,7 @@ function Receteler({ receteler, setReceteler, stok }) {
     return sonuc;
   }, [receteler, q, kat]);
 
-  const yeniEkle = () => {
+  const yeniEkle = async () => {
     if (!yeniForm.ad || yeniForm.malzemeler.filter(m => m.stokId && m.miktar > 0).length === 0) {
       alert('Reçete adı ve en az bir malzeme gerekli!');
       return;
@@ -916,10 +916,34 @@ function Receteler({ receteler, setReceteler, stok }) {
       aktif: true
     };
 
-    setReceteler([...receteler, yeni]);
-    setYeniForm({ ad: '', kategori: 'Çorba', porsiyon: 1, malzemeler: [{ stokId: '', miktar: 0 }], aciklama: '' });
-    setShowYeni(false);
-  };
+   // Supabase'e kaydet
+try {
+  const { data, error } = await supabase
+    .from('receteler')
+    .insert([{
+      ad: form.ad,
+      kategori: form.kategori,
+      porsiyon: Number(form.porsiyon) || 1,
+      hazirlama_suresi: Number(form.hazirlamaSuresi) || 0,
+      maliyet: malzemeler.reduce((t, m) => t + (m.miktar * m.birimFiyat), 0),
+      malzemeler: malzemeler,
+      notlar: form.notlar || '',
+      aktif: true
+    }])
+    .select();
+
+  if (error) throw error;
+
+  setReceteler([...receteler, data[0]]);
+  localStorage.setItem('lezzetsel_receteler', JSON.stringify([...receteler, data[0]]));
+  setForm({ ad: '', kategori: 'Ana Yemek', porsiyon: 1, hazirlamaSuresi: 30, notlar: '' });
+  setMalzemeler([]);
+  setShowYeniRecete(false);
+  alert('✅ Reçete eklendi!');
+} catch (err) {
+  console.error('Reçete ekleme hatası:', err);
+  alert('❌ Hata: ' + err.message);
+}
 
 
   return (
@@ -1122,7 +1146,7 @@ function AylikMenu({ menu, setMenu, receteler }) {
   
   const bugun = new Date().toISOString().slice(0, 10);
 
-  const yeniEkle = () => {
+  const yeniEkle = async () => {
     if (!yeniForm.tarih || yeniForm.yemekler.length === 0) {
       alert('Tarih ve en az bir yemek gerekli!');
       return;
@@ -1135,10 +1159,29 @@ function AylikMenu({ menu, setMenu, receteler }) {
       yemekler: yeniForm.yemekler.join(', ')
     };
 
-    setMenu([...menu, yeni]);
-    setYeniForm({ tarih: new Date().toISOString().slice(0, 10), ogun: 'Öğle', yemekler: [] });
-    setShowYeni(false);
-  };
+    // Supabase'e kaydet
+try {
+  const { data, error } = await supabase
+    .from('menu')
+    .insert([{
+      tarih: yeniMenu.tarih,
+      yemekler: secilenYemekler.join(', '),
+      notlar: yeniMenu.notlar || ''
+    }])
+    .select();
+
+  if (error) throw error;
+
+  setMenu([...menu, data[0]]);
+  localStorage.setItem('lezzetsel_menu', JSON.stringify([...menu, data[0]]));
+  setYeniMenu({ tarih: '', notlar: '' });
+  setSecilenYemekler([]);
+  setShowYeniMenu(false);
+  alert('✅ Menü eklendi!');
+} catch (err) {
+  console.error('Menü ekleme hatası:', err);
+  alert('❌ Hata: ' + err.message);
+}
 
   const yemekSil = (menuId, yemekIndex) => {
     const menuItem = menu.find(m => m.id === menuId);
@@ -1173,11 +1216,28 @@ function AylikMenu({ menu, setMenu, receteler }) {
     setShowDuzenle(true);
   };
 
-  const menuSil = (id) => {
-    if (confirm('Bu menüyü silmek istediğinizden emin misiniz?')) {
-      setMenu(menu.filter(m => m.id !== id));
-    }
-  };
+ const menuSil = async (id) => {
+  if (!window.confirm('Bu menüyü silmek istediğinizden emin misiniz?')) {
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('menu')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const yeniMenuListesi = menu.filter(m => m.id !== id);
+    setMenu(yeniMenuListesi);
+    localStorage.setItem('lezzetsel_menu', JSON.stringify(yeniMenuListesi));
+    alert('✅ Menü silindi!');
+  } catch (err) {
+    console.error('Menü silme hatası:', err);
+    alert('❌ Hata: ' + err.message);
+  }
+};
 
   const menuDuzenle = (menuItem) => {
     const yemekListesi = menuItem.yemekler.split(',').map(y => y.trim());
@@ -1716,7 +1776,7 @@ function Musteriler({ musteriler, setMusteriler }) {
     return sonuc;
   }, [musteriler, q, durum]);
 
-  const yeniEkle = () => {
+  const yeniEkle = async () => {
     if (!yeniForm.ad || !yeniForm.yetkili) {
       alert('Firma adı ve yetkili gerekli!');
       return;
@@ -1728,10 +1788,32 @@ function Musteriler({ musteriler, setMusteriler }) {
       aktif: true
     };
 
-    setMusteriler([...musteriler, yeni]);
-    setYeniForm({ ad: '', vkn: '', yetkili: '', telefon: '', email: '', adres: '' });
-    setShowYeni(false);
-  };
+    // Supabase'e kaydet
+try {
+  const { data, error } = await supabase
+    .from('musteriler')
+    .insert([{
+      ad: form.ad,
+      vkn: form.vkn || '',
+      yetkili: form.yetkili,
+      telefon: form.telefon || '',
+      email: form.email || '',
+      adres: form.adres || '',
+      aktif: true
+    }])
+    .select();
+
+  if (error) throw error;
+
+  setMusteriler([...musteriler, data[0]]);
+  localStorage.setItem('lezzetsel_musteriler', JSON.stringify([...musteriler, data[0]]));
+  setForm({ ad: '', vkn: '', yetkili: '', telefon: '', email: '', adres: '' });
+  setShowYeniMusteri(false);
+  alert('✅ Müşteri eklendi!');
+} catch (err) {
+  console.error('Müşteri ekleme hatası:', err);
+  alert('❌ Hata: ' + err.message);
+}
 
   const musteriDuzenle = (musteri) => {
     setDuzenleForm(musteri);
@@ -2010,7 +2092,7 @@ function Tedarikciler({ tedarikciler, setTedarikciler }) {
     return sonuc;
   }, [tedarikciler, q, kategori, durum]);
 
-  const yeniEkle = () => {
+ const yeniEkle = async () => {
     if (!yeniForm.ad || !yeniForm.yetkili) {
       alert('Firma adı ve yetkili gerekli!');
       return;
@@ -2022,10 +2104,32 @@ function Tedarikciler({ tedarikciler, setTedarikciler }) {
       aktif: true
     };
 
-    setTedarikciler([...tedarikciler, yeni]);
-    setYeniForm({ ad: '', vkn: '', yetkili: '', telefon: '', email: '', adres: '', kategori: 'Et' });
-    setShowYeni(false);
-  };
+  // Supabase'e kaydet
+try {
+  const { data, error } = await supabase
+    .from('tedarikciler')
+    .insert([{
+      ad: form.ad,
+      kategori: form.kategori || 'Diğer',
+      yetkili: form.yetkili,
+      telefon: form.telefon || '',
+      email: form.email || '',
+      adres: form.adres || '',
+      aktif: true
+    }])
+    .select();
+
+  if (error) throw error;
+
+  setTedarikciler([...tedarikciler, data[0]]);
+  localStorage.setItem('lezzetsel_tedarikciler', JSON.stringify([...tedarikciler, data[0]]));
+  setForm({ ad: '', kategori: 'Diğer', yetkili: '', telefon: '', email: '', adres: '' });
+  setShowYeniTedarikci(false);
+  alert('✅ Tedarikçi eklendi!');
+} catch (err) {
+  console.error('Tedarikçi ekleme hatası:', err);
+  alert('❌ Hata: ' + err.message);
+}
 
   const tedarikciDuzenle = (tedarikci) => {
     setDuzenleForm(tedarikci);
@@ -2833,7 +2937,7 @@ function UretimPlani({ musteriSiparisleri, setMusteriSiparisleri, menu, recetele
 
   const toplamPorsiyon = gunlukPlan.reduce((acc, y) => acc + y.porsiyon, 0);
 
-  const yeniEkle = () => {
+  const yeniEkle = async () => {
     console.log('🔵 Müşteri Siparişi Ekle butonuna tıklandı!');
     console.log('Form değerleri:', yeniForm);
     
@@ -2909,20 +3013,33 @@ function UretimPlani({ musteriSiparisleri, setMusteriSiparisleri, menu, recetele
       return;
     }
 
-    setMusteriSiparisleri([...musteriSiparisleri, ...yeniSiparisler]);
-    console.log('✅ Siparişler eklendi!');
-    
-    setYeniForm({ 
-      tarih: new Date().toISOString().slice(0, 10), 
-      musteriId: '', 
-      kahvaltiPorsiyon: '', 
-      oglePorsiyon: '', 
-      aksamPorsiyon: '' 
-    });
-    setShowYeni(false);
-    
-    alert(`✅ ${yeniSiparisler.length} sipariş başarıyla eklendi!`);
-  };
+    // Supabase'e kaydet
+try {
+  const { data, error } = await supabase
+    .from('musteri_siparisleri')
+    .insert([{
+      musteri_id: Number(yeniForm.musteriId),
+      musteri_ad: musteri?.ad || '',
+      tarih: yeniForm.tarih,
+      menu_ad: yeniForm.menuAd,
+      porsiyon: Number(yeniForm.porsiyon) || 1,
+      fiyat: Number(yeniForm.fiyat) || 0,
+      durum: 'Beklemede',
+      notlar: yeniForm.notlar || ''
+    }])
+    .select();
+
+  if (error) throw error;
+
+  setMusteriSiparisleri([...musteriSiparisleri, data[0]]);
+  localStorage.setItem('lezzetsel_musteriSiparisleri', JSON.stringify([...musteriSiparisleri, data[0]]));
+  setYeniForm({ musteriId: '', tarih: '', menuAd: '', porsiyon: 1, fiyat: 0, notlar: '' });
+  setShowYeniSiparis(false);
+  alert('✅ Sipariş eklendi!');
+} catch (err) {
+  console.error('Sipariş ekleme hatası:', err);
+  alert('❌ Hata: ' + err.message);
+}
 
   // Modal açıldığında formu sıfırla
   const modalAc = () => {
@@ -2936,12 +3053,28 @@ function UretimPlani({ musteriSiparisleri, setMusteriSiparisleri, menu, recetele
     setShowYeni(true);
   };
 
-  const siparisSil = (id) => {
-    if (confirm('Bu siparişi silmek istediğinizden emin misiniz?')) {
-      setMusteriSiparisleri(musteriSiparisleri.filter(s => s.id !== id));
-      alert('✅ Sipariş silindi!');
-    }
-  };
+  const siparisSil = async (id) => {
+  if (!window.confirm('Bu siparişi silmek istediğinizden emin misiniz?')) {
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('musteri_siparisleri')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const yeniSiparisListesi = musteriSiparisleri.filter(s => s.id !== id);
+    setMusteriSiparisleri(yeniSiparisListesi);
+    localStorage.setItem('lezzetsel_musteriSiparisleri', JSON.stringify(yeniSiparisListesi));
+    alert('✅ Sipariş silindi!');
+  } catch (err) {
+    console.error('Sipariş silme hatası:', err);
+    alert('❌ Hata: ' + err.message);
+  }
+};
 
   const siparisDurumDegistir = (id, yeniDurum) => {
     setMusteriSiparisleri(musteriSiparisleri.map(s => 
@@ -4958,28 +5091,59 @@ function Depo({ stok, setStok }) {
     return sonuc;
   }, [stok, q, kat]);
 
-  const cikisYap = () => {
-    const gecerli = cikisForm.filter(c => c.urunId && c.miktar > 0);
-    if (gecerli.length === 0) {
-      alert('Geçerli ürün girin!');
-      return;
+  const cikisYap = async () => {
+  const gecerli = cikisForm.filter(c => c.urunId && c.miktar > 0);
+  if (gecerli.length === 0) {
+    alert('Geçerli ürün girin!');
+    return;
+  }
+
+  try {
+    // Her ürün için stok güncelle
+    for (const satir of gecerli) {
+      const mevcutUrun = stok.find(s => s.id === Number(satir.urunId));
+      if (!mevcutUrun) continue;
+
+      const yeniMiktar = Math.max(0, mevcutUrun.miktar - Number(satir.miktar));
+
+      const { error: updateError } = await supabase
+        .from('stok')
+        .update({ miktar: yeniMiktar })
+        .eq('id', mevcutUrun.id);
+
+      if (updateError) throw updateError;
+
+      // Stok hareketi kaydet
+      await supabase
+        .from('stok_hareketleri')
+        .insert([{
+          stok_id: mevcutUrun.id,
+          hareket_tipi: 'cikis',
+          miktar: Number(satir.miktar),
+          birim_fiyat: mevcutUrun.birim_fiyat,
+          aciklama: satir.neden || 'Stok çıkışı'
+        }]);
     }
 
-    let yeniStok = [...stok];
-    gecerli.forEach(satir => {
-      yeniStok = yeniStok.map(item => {
-        if (item.id === Number(satir.urunId)) {
-          return { ...item, mevcut: Math.max(0, item.mevcut - Number(satir.miktar)) };
-        }
-        return item;
-      });
-    });
+    // Tüm stoku yeniden yükle
+    const { data: yeniStokData, error: fetchError } = await supabase
+      .from('stok')
+      .select('*')
+      .order('id');
 
-    setStok(yeniStok);
+    if (fetchError) throw fetchError;
+
+    setStok(yeniStokData);
+    localStorage.setItem('lezzetsel_stok', JSON.stringify(yeniStokData));
+
     setCikisForm([{ urunId: '', miktar: 0, neden: 'Üretim' }]);
     setShowCikis(false);
-    alert('Stok çıkışı başarılı!');
-  };
+    alert('✅ Stok çıkışı başarılı!');
+  } catch (err) {
+    console.error('Stok çıkışı hatası:', err);
+    alert('❌ Hata: ' + err.message);
+  }
+};
 
   const excelIndir = () => {
     alert('Excel indirme özelliği yakında eklenecek!');
@@ -5026,19 +5190,44 @@ function Depo({ stok, setStok }) {
     link.click();
   };
 
-  const sayimKaydet = () => {
-    const farklar = sayimForm.filter(s => s.sistemMiktar !== Number(s.sayilanMiktar));
-    
-    // Stokları güncelle
-    const yeniStok = stok.map(item => {
-      const sayim = sayimForm.find(s => s.id === item.id);
-      if (sayim) {
-        return { ...item, mevcut: Number(sayim.sayilanMiktar) };
-      }
-      return item;
-    });
+  const sayimKaydet = async () => {
+  const farklar = sayimForm.filter(s => s.sistemMiktar !== Number(s.sayilanMiktar));
+  
+  try {
+    // Her ürün için stok güncelle
+    for (const sayim of sayimForm) {
+      const { error } = await supabase
+        .from('stok')
+        .update({ miktar: Number(sayim.sayilanMiktar) })
+        .eq('id', sayim.id);
 
-    setStok(yeniStok);
+      if (error) throw error;
+
+      // Fark varsa stok hareketi kaydet
+      if (sayim.sistemMiktar !== Number(sayim.sayilanMiktar)) {
+        const fark = Number(sayim.sayilanMiktar) - sayim.sistemMiktar;
+        await supabase
+          .from('stok_hareketleri')
+          .insert([{
+            stok_id: sayim.id,
+            hareket_tipi: fark > 0 ? 'giris' : 'cikis',
+            miktar: Math.abs(fark),
+            birim_fiyat: 0,
+            aciklama: `Depo sayımı düzeltmesi (${fark > 0 ? '+' : ''}${fark})`
+          }]);
+      }
+    }
+
+    // Tüm stoku yeniden yükle
+    const { data: yeniStokData, error: fetchError } = await supabase
+      .from('stok')
+      .select('*')
+      .order('id');
+
+    if (fetchError) throw fetchError;
+
+    setStok(yeniStokData);
+    localStorage.setItem('lezzetsel_stok', JSON.stringify(yeniStokData));
 
     // Rapor oluştur
     const rapor = {
@@ -5058,7 +5247,12 @@ function Depo({ stok, setStok }) {
     setSayimRapor(rapor);
     setShowSayim(false);
     setShowSayimRapor(true);
-  };
+    alert('✅ Sayım başarıyla kaydedildi!');
+  } catch (err) {
+    console.error('Sayım kaydetme hatası:', err);
+    alert('❌ Hata: ' + err.message);
+  }
+};
 
   const sayimRaporuIndir = () => {
     if (!sayimRapor) return;
@@ -5094,38 +5288,68 @@ function Depo({ stok, setStok }) {
     link.click();
   };
 
-  const yeniKartEkle = () => {
+  const yeniKartEkle = async () => {
     if (!yeniKartForm.ad.trim()) {
       alert('Ürün adı gereklidir!');
       return;
     }
 
-    const yeniKart = {
-      id: Math.max(0, ...stok.map(s => s.id)) + 1,
-      ad: yeniKartForm.ad,
-      kategori: yeniKartForm.kategori,
-      birim: yeniKartForm.birim,
-      mevcut: 0,
-      esik: 10,
-      birimFiyat: 0,
-      aktif: true
-    };
+    try {
+      const { data, error } = await supabase
+        .from('stok')
+        .insert([{
+          ad: yeniKartForm.ad,
+          kategori: yeniKartForm.kategori,
+          birim: yeniKartForm.birim,
+          miktar: 0,
+          min_stok: 10,
+          birim_fiyat: 0,
+          aktif: true
+        }])
+        .select();
 
-    setStok([...stok, yeniKart]);
-    setYeniKartForm({
-      ad: '',
-      kategori: 'Kuru Gıda',
-      birim: 'kg'
-    });
-    setShowYeniKart(false);
-    alert(`✅ Stok kartı eklendi!\n\n${yeniKart.ad}\nKategori: ${yeniKart.kategori}\nBirim: ${yeniKart.birim}`);
+      if (error) throw error;
+
+      const yeniStokListesi = [...stok, data[0]];
+      setStok(yeniStokListesi);
+      localStorage.setItem('lezzetsel_stok', JSON.stringify(yeniStokListesi));
+
+      setYeniKartForm({
+        ad: '',
+        kategori: 'Kuru Gıda',
+        birim: 'kg'
+      });
+      setShowYeniKart(false);
+      alert(`✅ Stok kartı eklendi!\n\n${data[0].ad}\nKategori: ${data[0].kategori}\nBirim: ${data[0].birim}`);
+    } catch (err) {
+      console.error('Stok kartı ekleme hatası:', err);
+      alert('❌ Hata: ' + err.message);
+    }
   };
 
-  const durumDegistir = (id) => {
-    setStok(stok.map(item => 
-      item.id === id ? { ...item, aktif: !item.aktif } : item
-    ));
-  };
+  const durumDegistir = async (id) => {
+  const mevcutUrun = stok.find(s => s.id === id);
+  if (!mevcutUrun) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('stok')
+      .update({ aktif: !mevcutUrun.aktif })
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+
+    const yeniStok = stok.map(item => 
+      item.id === id ? data[0] : item
+    );
+    setStok(yeniStok);
+    localStorage.setItem('lezzetsel_stok', JSON.stringify(yeniStok));
+  } catch (err) {
+    console.error('Durum değiştirme hatası:', err);
+    alert('❌ Hata: ' + err.message);
+  }
+};
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -5669,40 +5893,19 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // LocalStorage'dan verileri yükle
-  const [stok, setStok] = useState(() => {
-    const saved = localStorage.getItem('lezzetsel_stok');
-    return saved ? JSON.parse(saved) : DEMO_STOK;
-  });
+const [stok, setStok] = useState([]); // ← Boş başlat, Supabase yükleyecek
   
-  const [musteriSiparisleri, setMusteriSiparisleri] = useState(() => {
-    const saved = localStorage.getItem('lezzetsel_musteriSiparisleri');
-    return saved ? JSON.parse(saved) : DEMO_MUSTERI_SIPARISLERI;
-  });
+  const [musteriSiparisleri, setMusteriSiparisleri] = useState([]);
   
-  const [siparisler, setSiparisler] = useState(() => {
-    const saved = localStorage.getItem('lezzetsel_siparisler');
-    return saved ? JSON.parse(saved) : DEMO_SIPARISLER;
-  });
+  const [siparisler, setSiparisler] = useState([]);
   
-  const [menu, setMenu] = useState(() => {
-    const saved = localStorage.getItem('lezzetsel_menu');
-    return saved ? JSON.parse(saved) : DEMO_AYLIK_MENU;
-  });
+  const [menu, setMenu] = useState([]);
   
-  const [receteler, setReceteler] = useState(() => {
-    const saved = localStorage.getItem('lezzetsel_receteler');
-    return saved ? JSON.parse(saved) : DEMO_RECETELER;
-  });
+  const [receteler, setReceteler] = useState([]);
   
-  const [musteriler, setMusteriler] = useState(() => {
-    const saved = localStorage.getItem('lezzetsel_musteriler');
-    return saved ? JSON.parse(saved) : DEMO_MUSTERILER;
-  });
+  const [musteriler, setMusteriler] = useState([]);
   
-  const [tedarikciler, setTedarikciler] = useState(() => {
-    const saved = localStorage.getItem('lezzetsel_tedarikciler');
-    return saved ? JSON.parse(saved) : DEMO_TEDARIKCILER;
-  });
+  const [tedarikciler, setTedarikciler] = useState([]);
 
   // SUPABASE - Veri Yükleme
   useEffect(() => {
@@ -5711,31 +5914,31 @@ export default function App() {
     console.log('📡 fetchData başladı!');  // ← BUNU DA EKLEYİN
     try {
         const { data: stokData } = await supabase.from('stok').select('*');
-        if (stokData && stokData.length > 0) {
+        if (stokData) {
           setStok(stokData);
           localStorage.setItem('lezzetsel_stok', JSON.stringify(stokData));
         }
         
         const { data: receteData } = await supabase.from('receteler').select('*');
-        if (receteData && receteData.length > 0) {
+        if (receteData) {
           setReceteler(receteData);
           localStorage.setItem('lezzetsel_receteler', JSON.stringify(receteData));
         }
         
         const { data: menuData } = await supabase.from('menu').select('*');
-        if (menuData && menuData.length > 0) {
+        if (menuData) {
           setMenu(menuData);
           localStorage.setItem('lezzetsel_menu', JSON.stringify(menuData));
         }
         
         const { data: musteriData } = await supabase.from('musteriler').select('*');
-        if (musteriData && musteriData.length > 0) {
+        if (musteriData) {
           setMusteriler(musteriData);
           localStorage.setItem('lezzetsel_musteriler', JSON.stringify(musteriData));
         }
         
         const { data: tedarikciData } = await supabase.from('tedarikciler').select('*');
-        if (tedarikciData && tedarikciData.length > 0) {
+        if (tedarikciData) {
           setTedarikciler(tedarikciData);
           localStorage.setItem('lezzetsel_tedarikciler', JSON.stringify(tedarikciData));
         }
