@@ -1086,6 +1086,7 @@ try {
     </div>
   );
 }
+}
 
 function AylikMenu({ menu, setMenu, receteler }) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
@@ -1741,6 +1742,7 @@ try {
   );
 }
 
+}
 function Musteriler({ musteriler, setMusteriler }) {
   const [q, setQ] = useState('');
   const [durum, setDurum] = useState('Aktif');
@@ -2051,6 +2053,7 @@ try {
   );
 }
 
+}
 function Tedarikciler({ tedarikciler, setTedarikciler }) {
   const [q, setQ] = useState('');
   const [kategori, setKategori] = useState('Tümü');
@@ -2397,6 +2400,7 @@ try {
 
 
 
+}
 function CostKontrol({ siparisler, setSiparisler, tedarikciler, stok, setStok }) {
   const [baslangicTarihi, setBaslangicTarihi] = useState('');
   const [bitisTarihi, setBitisTarihi] = useState('');
@@ -2778,7 +2782,6 @@ function CostKontrol({ siparisler, setSiparisler, tedarikciler, stok, setStok })
     </div>
   );
 }
-
 
 function UretimPlani({ musteriSiparisleri, setMusteriSiparisleri, menu, receteler, musteriler }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
@@ -3807,6 +3810,7 @@ try {
   );
 }
 
+}
 function Siparisler({ siparisler, setSiparisler, tedarikciler, stok, receteler, menu, musteriSiparisleri }) {
   const [showYeni, setShowYeni] = useState(false);
   const [showOtomatik, setShowOtomatik] = useState(false);
